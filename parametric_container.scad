@@ -29,12 +29,12 @@ INPLACE = 0; FACEUP = 1; FACEDOWN = 2;
 
 // Measurements of shipping container (in meters)
 // Shipping container size (external)
-EXT_LENGTH = 6.06;      // Standard lengths: 6.06 for 20', 12.19 for 40'
-EXT_WIDTH  = 2.44;      // Standard width:   2.44
-EXT_HEIGHT = 2.59;      // Standard heights: 2.59 or 2.90 for High Cube
+EXT_LENGTH = 6.058;      // Standard lengths: 6.06 for 20', 12.19 for 40'
+EXT_WIDTH  = 2.438;      // Standard width:   2.44
+EXT_HEIGHT = 2.591;      // Standard heights: 2.59 or 2.90 for High Cube
 
 // Model settings
-SCALE = 100;  // 1:<SCALE> sizing
+SCALE = 76.2;  // 1:<SCALE> sizing
 THICKNESS_WALL = 1.5;        // External wall in mm
 THICKNESS_WALL_INT = 1.5;   // Internal wall in mm
 TOLERANCE = 0.1; // Tolerance for assembly of walls (excluding frame)
@@ -65,7 +65,7 @@ STYLE_RIGHT="ridges";
 STYLE_LEFT="ridges";
 STYLE_TOP="ridges";
 STYLE_BOTTOM="flat";
-STYLE_FILL="walls";
+STYLE_FILL="infill";
 
 // Assembly styles
 // "box": a single box
@@ -79,7 +79,7 @@ STYLE_FILL="walls";
 //           printable this way, but interior walls will 
 //           not work and will be ignored.
 // "custom": custom placement for every part
-ASSEMBLY_STYLE = "parts";
+ASSEMBLY_STYLE = "box";
 // Parts displacement distance in mm
 PART_D = 3; 
 
@@ -129,7 +129,12 @@ SIDE_I = m2mm(SIDE_INSET); // Convert to scale (this needs to be placed here)
 */ 
 PLACE_WINDOWS = false;
 PLACE_TEXT_INT = false;
-PLACE_TEXT_EXT = true;
+PLACE_TEXT_EXT = false;
+PLACE_SCREWHOLES = true;
+//in literal mm, not scale metres
+screwhole_diameter = 2.0;
+screwhole_depth = 5.0;
+screwhole_from_edge = 5;
 FEATURES = [
      opening(wall=RIGHT, x=0.5, width=4),
      window(wall=LEFT, x=0.75, y=0.8, width=1.8, height=1.7),
@@ -466,6 +471,14 @@ module top(style=STYLE_TOP) {
     };    
 };
 
+module screwholes(){
+    translate([screwhole_from_edge,EXT_W/2,0])
+        cylinder(h=screwhole_depth, r=screwhole_diameter/2, $fn=200, center=true);
+    
+    translate([EXT_L - screwhole_from_edge,EXT_W/2,0])
+        cylinder(h=screwhole_depth, r=screwhole_diameter/2, $fn=200, center=true);
+}
+
 module bottom(style=STYLE_BOTTOM, features=FEATURES) {
   difference() {
     if (style == "crossbars") {
@@ -492,7 +505,11 @@ module bottom(style=STYLE_BOTTOM, features=FEATURES) {
           createText(text);
         };
       };
-    };    
+    };
+    if (PLACE_SCREWHOLES) {
+        screwholes();
+        
+    }
   };
 };
 
@@ -802,10 +819,15 @@ module bottom_ridges() {
 // Fill styles
 // Filled-in container, no hollow model
 module fill_infill(offset = THICKNESS_WALL) {
-  translate(v=[offset-inf(), offset-inf(), offset-inf()])
+  difference(){
+    translate(v=[offset-inf(), offset-inf(), offset-inf()])
       cube(size=[EXT_L-2*offset+inf(2), 
                  EXT_W-2*offset+inf(2), 
                  EXT_H-2*offset+inf(2)]);
+      if(PLACE_SCREWHOLES){
+          screwholes();
+      }
+  }
 };
 
 // Single tank for tanktainer
