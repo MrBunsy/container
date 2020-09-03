@@ -27,9 +27,11 @@ INPLACE = 0; FACEUP = 1; FACEDOWN = 2;
 // -----------------------------------------------
 // Parameter definition begins here
 
+twentyFooter = true;
+
 // Measurements of shipping container (in meters)
 // Shipping container size (external)
-EXT_LENGTH = 6.058;      // Standard lengths: 6.06 for 20', 12.19 for 40'
+EXT_LENGTH = twentyFooter ? 6.058 : 12.19;//6.058;      // Standard lengths: 6.06 for 20', 12.19 for 40'
 EXT_WIDTH  = 2.438;      // Standard width:   2.44
 EXT_HEIGHT = 2.591;      // Standard heights: 2.59 or 2.90 for High Cube
 
@@ -66,6 +68,26 @@ STYLE_LEFT="ridges";
 STYLE_TOP="ridges";
 STYLE_BOTTOM="flat";
 STYLE_FILL="infill";
+
+/*
+
+I want to produce lots of these containers, so I'm after lots of variation here
+Using a photo of a huge stack of these on a cargo ship for inspiration
+
+"original" for the orignal default - four horizontal ridges non-evenly spread
+0 - two ridges evenly spread
+1 for three horizontal ridges evenly spaced
+2 for four ridges evenly spaced but with gaps top and button
+*/
+DOOR_RIDGES_STYLE=1;
+
+//fractions of 1
+DOOR_RIDGES_STYLES = [
+    [ 1/4, 3/4 ],
+    [ 1/3, 2/3 ],
+    [1/4, 2/4, 3/4]
+    
+];
 
 // Assembly styles
 // "box": a single box
@@ -133,7 +155,7 @@ PLACE_TEXT_EXT = false;
 PLACE_SCREWHOLES = true;
 //in literal mm, not scale metres
 screwhole_diameter = 2.0;
-screwhole_depth = 5.0;
+screwhole_depth = 10.0;
 screwhole_from_edge = 5;
 FEATURES = [
      opening(wall=RIGHT, x=0.5, width=4),
@@ -195,15 +217,13 @@ ISO_czo = m2mm(ISO_1161_CORNER_Z_OFFSET);
 
 // Measurements of simple container door
 DOOR_INSET = m2mm(0.1); // Doors are inset 10 cm
-SEPARATOR_WIDTH = m2mm(0.1);
-SEPARATOR_DEPTH = THICKNESS_WALL;
-HINGE_LENGTH = m2mm(0.5); // 4 hinges
-HINGE_WIDTH = m2mm(0.1);
-HINGE_DEPTH = m2mm(0.1);
-HINGE_POS_HIGH = m2mm(EXT_HEIGHT)-2*HINGE_LENGTH; // Upper hinge
-HINGE_POS_LOW  = HINGE_LENGTH; // Lower hinge
-LATCH_WIDTH = m2mm(0.5);
-LATCH_DEPTH = m2mm(0.1); 
+SEPARATOR_WIDTH = m2mm(0.05);
+SEPARATOR_DEPTH = m2mm(0.05);;
+HINGE_LENGTH = m2mm(0.08); // 4 hinges
+HINGE_WIDTH = m2mm(0.15);
+HINGE_DEPTH = m2mm(0.05);
+LATCH_WIDTH = m2mm(0.2);
+LATCH_DEPTH = m2mm(0.05); 
 LATCH_LENGTH = m2mm(0.1);
 LATCH_POS = m2mm(EXT_HEIGHT)/2; // Vertical position
 
@@ -473,10 +493,10 @@ module top(style=STYLE_TOP) {
 
 module screwholes(){
     translate([screwhole_from_edge,EXT_W/2,0])
-        cylinder(h=screwhole_depth, r=screwhole_diameter/2, $fn=200, center=true);
+        cylinder(h=screwhole_depth*2, r=screwhole_diameter/2, $fn=200, center=true);
     
     translate([EXT_L - screwhole_from_edge,EXT_W/2,0])
-        cylinder(h=screwhole_depth, r=screwhole_diameter/2, $fn=200, center=true);
+        cylinder(h=screwhole_depth*2, r=screwhole_diameter/2, $fn=200, center=true);
 }
 
 module bottom(style=STYLE_BOTTOM, features=FEATURES) {
@@ -648,8 +668,6 @@ module face_door(offset = DOOR_INSET,
                  rd=RIDGE_D, rw=RIDGE_WIDTH, // Ridges 
                  sd=SEPARATOR_DEPTH, // Door separator
                  sw=SEPARATOR_WIDTH,
-                 hpl=HINGE_POS_LOW, // Hinge
-                 hph=HINGE_POS_HIGH,
                  hl=HINGE_LENGTH,
                  hw=HINGE_WIDTH, hd=HINGE_DEPTH,
                  lp=LATCH_POS, ll=LATCH_LENGTH, // Latch
@@ -665,7 +683,7 @@ module face_door(offset = DOOR_INSET,
         translate(v=[offset, t, t]) 
           cube(size=[wall, w-2*t, h-2*t]);
         // Ridges in door
-        for(i = [ [offset, t, hpl+hl/2 - rw*3/2],
+        /*for(i = [ [offset, t, hpl+hl/2 - rw*3/2],
                   [offset, t, hpl+hl/2 + rw*3/2],
                   [offset, t, hph+hl/2 - rw*3/2],
                   [offset, t, hph+hl/2 + rw*3/2]
@@ -673,21 +691,53 @@ module face_door(offset = DOOR_INSET,
           translate(v = i)
             ridge(rd, w-2*t, rw/2);
         }
+          */
+          door_ridge_height = rw/2;
+          //distance between hinges and centre bit of door
+          internal_door_width = w - t*2;
+          door_centre_wide = internal_door_width*0.1;
+          door_ridge_width = internal_door_width/2 - hw - door_centre_wide/2;
+          union(){
+              //ridges in doors
+              intersection(){
+                  
+                  
+                  
+                  for(ridge_height = DOOR_RIDGES_STYLES[DOOR_RIDGES_STYLE] ) {
+                          translate(v = [offset, t, ridge_height*h - door_ridge_height/2])
+                            ridge(rd, w-2*t, door_ridge_height);
+                      }
+                
+                //only want ridges in the middles of both doors
+                union(){
+                    translate([0,t+hw])cube([wall*10,door_ridge_width,h]);
+                    translate([0,w-t-door_ridge_width-hw])cube([wall*10,door_ridge_width,h]);
+                }
+            }
+            //and a slot down the middle to make it look like two doors
+            translate([t/3,w/2,0])rotate([0,0,45])cube([t,t,h*3],center=true);
+        }
       };
-      // Door separator
-      translate(v=[0, w/2-sw/2, t])
-         cubecylinder(size=[sd, sw, h-2*t]);
+      // this was a "Door separator" now it's the 4 locking mechanisms
+      for(y = [w/4, w/2-w/6+w/12 + w/96,w/2+w/6-w/12 - w/96, w-w/4]){
+          
+          translate(v=[offset-sd, y, t])
+             cubecylinder(size=[sd, sw, h-2*t]);
+          //extra cube behind them so these aren't floating above the ridges
+           translate(v=[offset, y, t])
+             cube([sd, sw, h-2*t]);
+      }
       // Hinges
       for(y = [t, w-t-hw]) {
-        for(z = [hpl, hph]) {
-          translate(v=[offset-hd,y,z])
-            cubecylinder(size=[hd,hw,hl]);
+        for(z = [0:4]) {
+          translate(v=[offset-hd,y,h/8+z*h/4 - hl/2])
+            cube(size=[hd,hw,hl]);
         };
       };
       // Latch
       translate(v=[offset-ld,w/2-lw/2,lp])
         rotate([-90,0,0])
-          cubecylinder(size=[ld,ll,lw]);  
+          cube([ld,ll,lw]);  
     }; // union
     // corners cut at 45° for easier assembly
     translate(v=[0,0,h])
