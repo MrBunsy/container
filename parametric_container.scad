@@ -27,7 +27,7 @@ INPLACE = 0; FACEUP = 1; FACEDOWN = 2;
 // -----------------------------------------------
 // Parameter definition begins here
 
-twentyFooter = true;
+twentyFooter = false;
 
 // Measurements of shipping container (in meters)
 // Shipping container size (external)
@@ -79,13 +79,18 @@ Using a photo of a huge stack of these on a cargo ship for inspiration
 1 for three horizontal ridges evenly spaced
 2 for four ridges evenly spaced but with gaps top and button
 */
-DOOR_RIDGES_STYLE=1;
+DOOR_RIDGES_STYLE=6;
 
-//fractions of 1
+//fractions of height
 DOOR_RIDGES_STYLES = [
-    [ 1/4, 3/4 ],
-    [ 1/3, 2/3 ],
-    [1/4, 2/4, 3/4]
+    [],//none
+    [ 1/4, 3/4 ],//two 
+    [ 1/3, 2/3 ],//two closer to centre
+    [1/4, 2/4, 3/4], //three evenly spaced
+    [1/2-1/5, 1/2, 1/2 + 1/5],//three clustered in centre
+    [2/10, 4/10, 6/10, 8/10 ], //four near centre
+    [2/10, 3/10, 7/10, 8/10 ], //four in two pairs
+    [2/10, 4/10,5/10, 6/10, 8/10 ], //five, with three in cetnre
     
 ];
 
@@ -156,7 +161,7 @@ PLACE_SCREWHOLES = true;
 //in literal mm, not scale metres
 screwhole_diameter = 2.0;
 screwhole_depth = 10.0;
-screwhole_from_edge = 5;
+screwhole_from_edge = twentyFooter  ? 4.75 : 5;
 FEATURES = [
      opening(wall=RIGHT, x=0.5, width=4),
      window(wall=LEFT, x=0.75, y=0.8, width=1.8, height=1.7),
@@ -497,6 +502,18 @@ module screwholes(){
     
     translate([EXT_L - screwhole_from_edge,EXT_W/2,0])
         cylinder(h=screwhole_depth*2, r=screwhole_diameter/2, $fn=200, center=true);
+    echo("screwholes distance ", EXT_L - screwhole_from_edge - screwhole_from_edge);
+    
+    if(!twentyFooter){
+        //extra screwholes
+        
+        translate([screwhole_from_edge+70,EXT_W/2,0])
+        cylinder(h=screwhole_depth*2, r=screwhole_diameter/2, $fn=200, center=true);
+    
+    translate([EXT_L - screwhole_from_edge - 70,EXT_W/2,0])
+        cylinder(h=screwhole_depth*2, r=screwhole_diameter/2, $fn=200, center=true);
+    echo("screwholes distance ", EXT_L - screwhole_from_edge - screwhole_from_edge);
+    }
 }
 
 module bottom(style=STYLE_BOTTOM, features=FEATURES) {
@@ -698,20 +715,22 @@ module face_door(offset = DOOR_INSET,
           door_centre_wide = internal_door_width*0.1;
           door_ridge_width = internal_door_width/2 - hw - door_centre_wide/2;
           union(){
-              //ridges in doors
-              intersection(){
-                  
-                  
-                  
-                  for(ridge_height = DOOR_RIDGES_STYLES[DOOR_RIDGES_STYLE] ) {
-                          translate(v = [offset, t, ridge_height*h - door_ridge_height/2])
-                            ridge(rd, w-2*t, door_ridge_height);
-                      }
-                
-                //only want ridges in the middles of both doors
-                union(){
-                    translate([0,t+hw])cube([wall*10,door_ridge_width,h]);
-                    translate([0,w-t-door_ridge_width-hw])cube([wall*10,door_ridge_width,h]);
+              if(len(DOOR_RIDGES_STYLES[DOOR_RIDGES_STYLE]) > 0){
+                  //ridges in doors
+                  intersection(){
+                      
+                      
+                      
+                      for(ridge_height = DOOR_RIDGES_STYLES[DOOR_RIDGES_STYLE] ) {
+                              translate(v = [offset, t, ridge_height*h - door_ridge_height/2])
+                                ridge(rd, w-2*t, door_ridge_height);
+                          }
+                    
+                    //only want ridges in the middles of both doors
+                    union(){
+                        translate([0,t+hw])cube([wall*10,door_ridge_width,h]);
+                        translate([0,w-t-door_ridge_width-hw])cube([wall*10,door_ridge_width,h]);
+                    }
                 }
             }
             //and a slot down the middle to make it look like two doors
