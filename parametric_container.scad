@@ -79,10 +79,10 @@ Using a photo of a huge stack of these on a cargo ship for inspiration
 1 for three horizontal ridges evenly spaced
 2 for four ridges evenly spaced but with gaps top and button
 */
-DOOR_RIDGES_STYLE=6;
+DOOR_STYLE=6;
 
 //fractions of height
-DOOR_RIDGES_STYLES = [
+DOOR_STYLES = [
     [],//none
     [ 1/4, 3/4 ],//two 
     [ 1/3, 2/3 ],//two closer to centre
@@ -93,6 +93,34 @@ DOOR_RIDGES_STYLES = [
     [2/10, 4/10,5/10, 6/10, 8/10 ], //five, with three in cetnre
     
 ];
+
+//as fraction of total height, to be matched with door ridges styles
+DOOR_HANDLE_HEIGHTS = [
+    [1/4, 1/4, 1/4, 1/4],
+    [1/4, 1/4, 1/4, 1/4],
+    [1/4, 1/4, 1/4, 1/4],
+    [1/4, 1/4, 1/4, 1/4],
+    [1/4, 1/4, 1/4, 1/4],
+    [1/4, 1/4, 1/4, 1/4],
+    [1/4, 1/4, 1/4, 1/4],
+    [1/4, 1/4, 1/4, 1/4],
+];
+
+DOOR_HANDLE_DIRECTIONS = [
+    [true, true, false, false],
+    [true, true, false, false],
+    [true, true, false, false],
+    [true, true, false, false],
+    [true, true, false, false],
+    [true, true, false, false],
+    [true, true, false, false],
+    [true, true, false, false],
+];
+
+
+
+//if true, all in a row, if false, offset heights
+DOOR_HANDLES_ALIGNED = true;
 
 // Assembly styles
 // "box": a single box
@@ -715,13 +743,13 @@ module face_door(offset = DOOR_INSET,
           door_centre_wide = internal_door_width*0.1;
           door_ridge_width = internal_door_width/2 - hw - door_centre_wide/2;
           union(){
-              if(len(DOOR_RIDGES_STYLES[DOOR_RIDGES_STYLE]) > 0){
+              if(len(DOOR_STYLES[DOOR_STYLE]) > 0){
                   //ridges in doors
                   intersection(){
                       
                       
                       
-                      for(ridge_height = DOOR_RIDGES_STYLES[DOOR_RIDGES_STYLE] ) {
+                      for(ridge_height = DOOR_STYLES[DOOR_STYLE] ) {
                               translate(v = [offset, t, ridge_height*h - door_ridge_height/2])
                                 ridge(rd, w-2*t, door_ridge_height);
                           }
@@ -738,14 +766,28 @@ module face_door(offset = DOOR_INSET,
         }
       };
       // this was a "Door separator" now it's the 4 locking mechanisms
-      for(y = [w/4, w/2-w/6+w/12 + w/96,w/2+w/6-w/12 - w/96, w-w/4]){
+      lockingPositions = [w/4,
+                                w/2-w/6+w/12 + w/96,
+                                w/2+w/6-w/12 - w/96,
+                          w-w/4
+                         ];
+      for(i = [0:3]){
+          y = lockingPositions[i];
           
-          translate(v=[offset-sd, y, t])
+          translate(v=[offset-sd, y-sw/2, t])
              cubecylinder(size=[sd, sw, h-2*t]);
           //extra cube behind them so these aren't floating above the ridges
            translate(v=[offset, y, t])
              cube([sd, sw, h-2*t]);
+           handle_width = w/12;
+          //handles for the locking mechanism
+          translate(v=[offset-sd, DOOR_HANDLE_DIRECTIONS[DOOR_STYLE][i] ? y-handle_width : y, h*DOOR_HANDLE_HEIGHTS[DOOR_STYLE][i]])
+             cube([sd*2, handle_width , sw*0.75]);
       }
+      
+      
+      
+      
       // Hinges
       for(y = [t, w-t-hw]) {
         for(z = [0:4]) {
@@ -753,7 +795,7 @@ module face_door(offset = DOOR_INSET,
             cube(size=[hd,hw,hl]);
         };
       };
-      // Latch
+      // Lock
       translate(v=[offset-ld,w/2-lw/2,lp])
         rotate([-90,0,0])
           cube([ld,ll,lw]);  
