@@ -27,7 +27,7 @@ INPLACE = 0; FACEUP = 1; FACEDOWN = 2;
 // -----------------------------------------------
 // Parameter definition begins here
 
-twentyFooter = false;
+twentyFooter = true;
 
 // Measurements of shipping container (in meters)
 // Shipping container size (external)
@@ -73,11 +73,8 @@ STYLE_FILL="infill";
 
 I want to produce lots of these containers, so I'm after lots of variation here
 Using a photo of a huge stack of these on a cargo ship for inspiration
-
-"original" for the orignal default - four horizontal ridges non-evenly spread
-0 - two ridges evenly spread
-1 for three horizontal ridges evenly spaced
-2 for four ridges evenly spaced but with gaps top and button
+0 - no door ridges
+1 - two ridges evenly spread
 */
 DOOR_STYLE=2;
 
