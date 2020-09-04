@@ -79,7 +79,7 @@ Using a photo of a huge stack of these on a cargo ship for inspiration
 1 for three horizontal ridges evenly spaced
 2 for four ridges evenly spaced but with gaps top and button
 */
-DOOR_STYLE=6;
+DOOR_STYLE=2;
 
 //fractions of height
 DOOR_STYLES = [
@@ -96,9 +96,9 @@ DOOR_STYLES = [
 
 //as fraction of total height, to be matched with door ridges styles
 DOOR_HANDLE_HEIGHTS = [
-    [1/4, 1/4, 1/4, 1/4],
-    [1/4, 1/4, 1/4, 1/4],
-    [1/4, 1/4, 1/4, 1/4],
+    [1/4, 1/6, 1/6, 1/4],
+    [1/8, 1/6, 1/6, 1/8],
+    [1/6, 1/4, 1/6, 1/4],
     [1/4, 1/4, 1/4, 1/4],
     [1/4, 1/4, 1/4, 1/4],
     [1/4, 1/4, 1/4, 1/4],
@@ -107,9 +107,9 @@ DOOR_HANDLE_HEIGHTS = [
 ];
 
 DOOR_HANDLE_DIRECTIONS = [
-    [true, true, false, false],
-    [true, true, false, false],
-    [true, true, false, false],
+    [false, true, false, true],
+    [false, true, false, true],
+    [false, true, false, true],
     [true, true, false, false],
     [true, true, false, false],
     [true, true, false, false],
