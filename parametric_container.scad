@@ -76,7 +76,7 @@ Using a photo of a huge stack of these on a cargo ship for inspiration
 0 - no door ridges
 1 - two ridges evenly spread
 */
-DOOR_STYLE=2;
+DOOR_STYLE=6;
 
 //fractions of height
 DOOR_STYLES = [
@@ -774,7 +774,7 @@ module face_door(offset = DOOR_INSET,
           translate(v=[offset-sd, y-sw/2, t])
              cubecylinder(size=[sd, sw, h-2*t]);
           //extra cube behind them so these aren't floating above the ridges
-           translate(v=[offset, y, t])
+           translate(v=[offset, y-sw/2, t])
              cube([sd, sw, h-2*t]);
            handle_width = w/12;
           //handles for the locking mechanism
