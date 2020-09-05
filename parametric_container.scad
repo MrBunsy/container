@@ -28,12 +28,13 @@ INPLACE = 0; FACEUP = 1; FACEDOWN = 2;
 // Parameter definition begins here
 
 twentyFooter = true;
+highcube = false;
 
 // Measurements of shipping container (in meters)
 // Shipping container size (external)
 EXT_LENGTH = twentyFooter ? 6.058 : 12.19;//6.058;      // Standard lengths: 6.06 for 20', 12.19 for 40'
 EXT_WIDTH  = 2.438;      // Standard width:   2.44
-EXT_HEIGHT = 2.591;      // Standard heights: 2.59 or 2.90 for High Cube
+EXT_HEIGHT = highcube ? 2.90 : 2.591;      // Standard heights: 2.59 or 2.90 for High Cube
 
 // Model settings
 SCALE = 76.2;  // 1:<SCALE> sizing
@@ -76,7 +77,7 @@ Using a photo of a huge stack of these on a cargo ship for inspiration
 0 - no door ridges
 1 - two ridges evenly spread
 */
-DOOR_STYLE=6;
+DOOR_STYLE=7;
 
 //fractions of height
 DOOR_STYLES = [
@@ -96,11 +97,11 @@ DOOR_HANDLE_HEIGHTS = [
     [1/4, 1/6, 1/6, 1/4],
     [1/8, 1/6, 1/6, 1/8],
     [1/6, 1/4, 1/6, 1/4],
-    [1/4, 1/4, 1/4, 1/4],
-    [1/4, 1/4, 1/4, 1/4],
-    [1/4, 1/4, 1/4, 1/4],
-    [1/4, 1/4, 1/4, 1/4],
-    [1/4, 1/4, 1/4, 1/4],
+    [1/3, 1/3, 1/3, 1/3],
+    [1/8, 3/16, 1/8, 3/16],
+    [2/8, 5/16, 2/8, 5/16],
+    [3/25, 3/25, 3/25, 3/25],
+    [7/32, 7/24, 7/24, 7/32],
 ];
 
 DOOR_HANDLE_DIRECTIONS = [
@@ -108,10 +109,10 @@ DOOR_HANDLE_DIRECTIONS = [
     [false, true, false, true],
     [false, true, false, true],
     [true, true, false, false],
+    [false, true, false, true],
+    [false, true, false, true],
     [true, true, false, false],
-    [true, true, false, false],
-    [true, true, false, false],
-    [true, true, false, false],
+    [false, true, false, true],
 ];
 
 
