@@ -9,7 +9,13 @@ interior walls.
 
 ## MrBunsy's Fork
 
-Attempting to use this to 3D print ISO containers for my OO gauge container wagon. I've added optional screwholes in the base and will be attempting to improve the style of the door.
+Attempting to use this to 3D print ISO containers for my OO gauge container wagon. I've added optional screwholes in the base and variants of the door, so I can print lots of containers without them all being identical. I've added the following variables:
+
+	twentyFooter = true;
+	highcube = false;
+	DOOR_STYLE = 7;
+
+There are 8 door styles, from 0 to 7.
 
 ## Prerequisites
 
