@@ -556,7 +556,7 @@ module tuppence_holes(){
 }
 
 module penny_holes(){
-	base_holes(20.3+0.3, 23, 1.65*4+0.9, false);
+	base_holes(20.3+0.4, 23, 1.65*4+0.9, false);
 }
 
 module bottom(style=STYLE_BOTTOM, features=FEATURES) {
