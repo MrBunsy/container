@@ -77,7 +77,7 @@ Using a photo of a huge stack of these on a cargo ship for inspiration
 0 - no door ridges
 1 - two ridges evenly spread
 */
-DOOR_STYLE=7;
+DOOR_STYLE=4;
 
 //fractions of height
 DOOR_STYLES = [
@@ -180,10 +180,15 @@ SIDE_I = m2mm(SIDE_INSET); // Convert to scale (this needs to be placed here)
    All units in m.
    Interior text can be placed in X direction only so far.
 */ 
+
+COIN_HOLDER = "penny";
+
 PLACE_WINDOWS = false;
 PLACE_TEXT_INT = false;
 PLACE_TEXT_EXT = false;
 PLACE_SCREWHOLES = true;
+PLACE_TUPPENCE_HOLES = COIN_HOLDER == "tuppence";
+PLACE_PENNY_HOLES = COIN_HOLDER == "penny";
 //in literal mm, not scale metres
 screwhole_diameter = 2.0;
 screwhole_depth = 10.0;
@@ -522,7 +527,7 @@ module top(style=STYLE_TOP) {
     };    
 };
 
-module screwholes(){
+module base_holes(screwhole_diameter, screwhole_from_edge, screwhole_depth, extraForFortyFeet = true){
     translate([screwhole_from_edge,EXT_W/2,0])
         cylinder(h=screwhole_depth*2, r=screwhole_diameter/2, $fn=200, center=true);
     
@@ -530,7 +535,7 @@ module screwholes(){
         cylinder(h=screwhole_depth*2, r=screwhole_diameter/2, $fn=200, center=true);
     echo("screwholes distance ", EXT_L - screwhole_from_edge - screwhole_from_edge);
     
-    if(!twentyFooter){
+    if(!twentyFooter && extraForFortyFeet){
         //extra screwholes
         
         translate([screwhole_from_edge+70,EXT_W/2,0])
@@ -540,6 +545,18 @@ module screwholes(){
         cylinder(h=screwhole_depth*2, r=screwhole_diameter/2, $fn=200, center=true);
     echo("screwholes distance ", EXT_L - screwhole_from_edge - screwhole_from_edge);
     }
+}
+
+module screwholes(){
+	base_holes(screwhole_diameter, screwhole_from_edge, screwhole_depth);
+}
+
+module tuppence_holes(){
+	base_holes(25.9+0.3, 23, 2.03*2+0.9, false);
+}
+
+module penny_holes(){
+	base_holes(20.3+0.3, 23, 1.65*4+0.9, false);
 }
 
 module bottom(style=STYLE_BOTTOM, features=FEATURES) {
@@ -571,8 +588,13 @@ module bottom(style=STYLE_BOTTOM, features=FEATURES) {
     };
     if (PLACE_SCREWHOLES) {
         screwholes();
-        
     }
+	if(PLACE_TUPPENCE_HOLES){
+		tuppence_holes();
+	}
+	if(PLACE_PENNY_HOLES){
+		penny_holes();
+	}
   };
 };
 
@@ -936,6 +958,12 @@ module fill_infill(offset = THICKNESS_WALL) {
       if(PLACE_SCREWHOLES){
           screwholes();
       }
+	  if(PLACE_TUPPENCE_HOLES){
+		tuppence_holes();
+		}
+	if(PLACE_PENNY_HOLES){
+			penny_holes();
+		}
   }
 };
 
