@@ -181,7 +181,7 @@ SIDE_I = m2mm(SIDE_INSET); // Convert to scale (this needs to be placed here)
    Interior text can be placed in X direction only so far.
 */ 
 
-COIN_HOLDER = "penny";
+COIN_HOLDER = "tuppence";
 
 PLACE_WINDOWS = false;
 PLACE_TEXT_INT = false;
@@ -552,7 +552,7 @@ module screwholes(){
 }
 
 module tuppence_holes(){
-	base_holes(25.9+0.3, 23, 2.03*2+0.9, false);
+	base_holes(25.9+0.4, 23, 2.03*2+0.9, false);
 }
 
 module penny_holes(){
