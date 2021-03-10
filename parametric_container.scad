@@ -82,8 +82,8 @@ TEXT_SIDE_SIZE = 26 - len(TEXT_SIDE_WORDS)*1.3;
 // TEXT_SIDE_POS = [m2mm(EXT_LENGTH)]
 // LOGO_SIDE_FILE = "paddington.svg";
 // LOGO_SIDE_SIZE = [265.41539,339.24522];
-LOGO_SIDE_FILE = "paddington2.svg";
-LOGO_BG_FILE = "paddington2_bg.svg";
+LOGO_SIDE_FILE = "paddington2_bg.svg";
+LOGO_BG_FILE = "";
 //size, in mm, of SVG (see document properties in inkscape)
 LOGO_SIDE_SIZE = [100.54167,137.93611];
 
@@ -1158,14 +1158,19 @@ module createLogo(logo){
   scaleby = logo_aspect < container_aspect ? (EXT_H-5)/logo[FONT_SIZE][1] : (EXT_L-5)/logo[FONT_SIZE][0];
   translate (v=[EXT_L/2, SIDE_I+RIDGE_D*1.5, EXT_H/2])
     rotate([90,0,0]){
-        translate([0,0,RIDGE_D*2])linear_extrude(height = RIDGE_D*0.5)
+      if(len(logo_lines) > 0){
+        linear_extrude(height = RIDGE_D*2)
         //offset as hack to cope with self-intersecting SVG (http://forum.openscad.org/problem-with-SVG-import-td31295.html)
          scale([scaleby,scaleby,1])offset(0.01)import(logo_lines, center=true);
-        linear_extrude(height = RIDGE_D*2)
+      }
+      if(len(logo_bg) > 0){
+        linear_extrude(height = RIDGE_D*1.5)
          scale([scaleby,scaleby,1])offset(0.01)import(logo_bg, center=true);
+      }
     }
+  }
 
-}
+
 
 // Create cutouts (applies to openings and windows)
 module createCutout(opening, direction = "", offsetX = 0, offsetY = 0) {
