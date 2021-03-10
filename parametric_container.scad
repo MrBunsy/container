@@ -18,7 +18,7 @@
 TYPE = 0; DIR = 1; STRING = 1; X = 2; Y = 3; W = 4; FONT_SIZE = 4; H = 5; ROTATE = 5; D = 6;
 // Constants for the vector types
 OPENING = "O"; WINDOW = "W"; WALL = "D"; 
-TEXT_INT = "TI"; TEXT_EXT = "TE";
+TEXT_INT = "TI"; TEXT_EXT = "TE"; TEXT_SIDE = "TS"; LOGO_SIDE = "LS";
 // Constants for indexing container walls
 TOP = 0; FRONT = 1; BACK = 2; RIGHT = 3; LEFT = 4; BOTTOM = 5;
 // Constants for assembly styles
@@ -41,6 +41,7 @@ SCALE = 76.2;  // 1:<SCALE> sizing
 THICKNESS_WALL = 1.5;        // External wall in mm
 THICKNESS_WALL_INT = 1.5;   // Internal wall in mm
 TOLERANCE = 0.1; // Tolerance for assembly of walls (excluding frame)
+
 
 // Container styles:
 // 
@@ -69,6 +70,22 @@ STYLE_LEFT="ridges";
 STYLE_TOP="ridges";
 STYLE_BOTTOM="flat";
 STYLE_FILL="infill";
+
+TEXT_SIDE_FONT = "Impact";
+//TEXT_SIDE_WORDS = "Wally Shipping";
+//TEXT_SIDE_SIZE = 7;
+
+TEXT_SIDE_WORDS = "";
+//bit of tinkering, this seems to work
+TEXT_SIDE_SIZE = 26 - len(TEXT_SIDE_WORDS)*1.3;
+//currently it auto centres
+// TEXT_SIDE_POS = [m2mm(EXT_LENGTH)]
+// LOGO_SIDE_FILE = "paddington.svg";
+// LOGO_SIDE_SIZE = [265.41539,339.24522];
+LOGO_SIDE_FILE = "paddington2.svg";
+LOGO_BG_FILE = "paddington2_bg.svg";
+//size, in mm, of SVG (see document properties in inkscape)
+LOGO_SIDE_SIZE = [100.54167,137.93611];
 
 /*
 
@@ -181,11 +198,13 @@ SIDE_I = m2mm(SIDE_INSET); // Convert to scale (this needs to be placed here)
    Interior text can be placed in X direction only so far.
 */ 
 
-COIN_HOLDER = "tuppence";
+COIN_HOLDER = "none";
 
 PLACE_WINDOWS = false;
 PLACE_TEXT_INT = false;
 PLACE_TEXT_EXT = false;
+PLACE_TEXT_SIDES = len(TEXT_SIDE_WORDS) > 0;
+PLACE_LOGO_SIDES = len(LOGO_SIDE_FILE) > 0;
 PLACE_SCREWHOLES = true;
 PLACE_TUPPENCE_HOLES = COIN_HOLDER == "tuppence";
 PLACE_PENNY_HOLES = COIN_HOLDER == "penny";
@@ -202,7 +221,9 @@ FEATURES = [
      wall(dir="y", x=2.5, y=0.75, length=1.0),
      text_int(text="Robe", x=0.25, y=2.1, size=6),
      text_int(text="Bed 1", x=3.0, y=1.7, size=8),
-     text_ext(text=str("1:",SCALE), x=0.25, y=2.1, size=6)
+     text_ext(text=str("1:",SCALE), x=0.25, y=2.1, size=6),
+     text_side(text = TEXT_SIDE_WORDS,x=0.25, y=2.1, size=TEXT_SIDE_SIZE),
+     logo_side(text = [LOGO_SIDE_FILE, LOGO_BG_FILE], size=LOGO_SIDE_SIZE)
 ];
 
 // Color the frame differently
@@ -450,6 +471,20 @@ module side(style=STYLE_RIGHT, features=FEATURES, dir=RIGHT) {
       if (PLACE_WINDOWS) {
         for (feature = FEATURES) {
            createFrame(feature, dir);
+        };
+      };
+      if (PLACE_TEXT_SIDES) {
+        for (text = features) {
+          if (text[TYPE] == TEXT_SIDE) {
+            createText(text);
+          };
+        };
+      };
+      if (PLACE_LOGO_SIDES) {
+        for (logo = features) {
+          if (logo[TYPE] == LOGO_SIDE) {
+            createLogo(logo);
+          };
         };
       };
     }; // union
@@ -1101,8 +1136,36 @@ module createText(text) {
           halign = "left",
           valign = "top");
     };
+  }else if(text[TYPE] == TEXT_SIDE){
+     translate (v=[EXT_L/2, SIDE_I+RIDGE_D*1.5, EXT_H/2])
+      rotate([90,0,0])
+        linear_extrude(height = RIDGE_D*2.5) {
+         text(text = text[STRING],
+          font = TEXT_SIDE_FONT,
+          size = text[FONT_SIZE],
+          halign = "center",
+          valign = "center");
+        }
   };
 };
+
+module createLogo(logo){
+  logo_lines = logo[STRING][0];
+  logo_bg = logo[STRING][1];
+  logo_aspect = logo[FONT_SIZE][0]/logo[FONT_SIZE][1];
+  container_aspect = EXT_L/EXT_H;
+  //scale by height or width so it will fit
+  scaleby = logo_aspect < container_aspect ? (EXT_H-5)/logo[FONT_SIZE][1] : (EXT_L-5)/logo[FONT_SIZE][0];
+  translate (v=[EXT_L/2, SIDE_I+RIDGE_D*1.5, EXT_H/2])
+    rotate([90,0,0]){
+        translate([0,0,RIDGE_D*2])linear_extrude(height = RIDGE_D*0.5)
+        //offset as hack to cope with self-intersecting SVG (http://forum.openscad.org/problem-with-SVG-import-td31295.html)
+         scale([scaleby,scaleby,1])offset(0.01)import(logo_lines, center=true);
+        linear_extrude(height = RIDGE_D*2)
+         scale([scaleby,scaleby,1])offset(0.01)import(logo_bg, center=true);
+    }
+
+}
 
 // Create cutouts (applies to openings and windows)
 module createCutout(opening, direction = "", offsetX = 0, offsetY = 0) {
@@ -1229,6 +1292,10 @@ function text_int(text, x, y, size, rotate) =
   [TEXT_INT, text, x, y, size, rotate];
 function text_ext(text, x, y, size, rotate) = 
   [TEXT_EXT, text, x, y, size, rotate];
+function text_side(text, x, y, size, rotate) = 
+  [TEXT_SIDE, text, x, y, size, rotate];
+function logo_side(text, size, rotate) = 
+  [LOGO_SIDE, text, 0, 0, size, rotate];
 
 // Create all the model objects...
 echo(str("Container size ", EXT_L, "mm x ", EXT_W, "mm x ", EXT_H, "mm"));

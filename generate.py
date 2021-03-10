@@ -2,6 +2,7 @@ import os
 from multiprocessing import Pool
 import multiprocessing
 from pathlib import Path
+from OpenSCADJob import JobDescription, multiprocessJobs
 
 
 Path("out").mkdir(parents=True, exist_ok=True)
@@ -9,7 +10,10 @@ Path("out").mkdir(parents=True, exist_ok=True)
 door_styles = 8
 lengths = [True, False]
 highcubes = [True, False]
-coins = ["penny","tuppence","none"]
+coins = ["none"]#"penny","tuppence",
+texts = [{text:"Wally Shipping", size:7},
+         {text:None, size:0},
+         {text:"Trains R Us", size:7}]
 
 def genContainer(tup):
     style, twentyfooter, highcube, coin = tup
@@ -22,7 +26,8 @@ def genContainer(tup):
 jobs = []
 for length in lengths:
     for door in range(door_styles):
-        for highcube in highcubes:
+        #turns out you don't get 20ft hicubes
+        for highcube in [False] if length else highcubes:
             for coin in coins:
                 jobs.append([door, length, highcube, coin])
 
