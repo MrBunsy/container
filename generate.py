@@ -11,9 +11,9 @@ door_styles = 8
 lengths = [True, False]
 highcubes = [True, False]
 coins = ["none"]#"penny","tuppence",
-texts = [{text:"Wally Shipping", size:7},
-         {text:None, size:0},
-         {text:"Trains R Us", size:7}]
+texts = [{text:"Wally Shipping"},
+         {text:None},
+         {text:"Trains R Us"}]
 
 def genContainer(tup):
     style, twentyfooter, highcube, coin = tup

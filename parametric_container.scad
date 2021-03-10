@@ -13,6 +13,8 @@
    (https://creativecommons.org/licenses/by/3.0/)
 */
 
+use <fontmetrics.scad>;
+
 // Leave the following constants alone!
 // Meaningful names for the indexes into the various vectors
 TYPE = 0; DIR = 1; STRING = 1; X = 2; Y = 3; W = 4; FONT_SIZE = 4; H = 5; ROTATE = 5; D = 6;
@@ -75,9 +77,9 @@ TEXT_SIDE_FONT = "Impact";
 //TEXT_SIDE_WORDS = "Wally Shipping";
 //TEXT_SIDE_SIZE = 7;
 
-TEXT_SIDE_WORDS = "";
-//bit of tinkering, this seems to work
-TEXT_SIDE_SIZE = 26 - len(TEXT_SIDE_WORDS)*1.3;
+TEXT_SIDE_WORDS = "Paddy            Trains";
+//this is auto-scaled in createText, so not used anymore
+TEXT_SIDE_SIZE = 7;//2.1*m2mm(EXT_LENGTH)/len(TEXT_SIDE_WORDS) ;//27 - len(TEXT_SIDE_WORDS)*0.8;
 //currently it auto centres
 // TEXT_SIDE_POS = [m2mm(EXT_LENGTH)]
 // LOGO_SIDE_FILE = "paddington.svg";
@@ -706,7 +708,7 @@ module side_ridges(inset = SIDE_I,
     difference() {
       side_flat(inset); 
       // Generate simple rectangular ridges
-      for (i = [0 : count - 1]) {
+      for (i = [1 : count - 1]) {
         translate (v=[(i*rw) - (rw/4), inset, t])
           ridge(rw / 2, rd, h-2*t);
         }
@@ -1137,9 +1139,13 @@ module createText(text) {
           valign = "top");
     };
   }else if(text[TYPE] == TEXT_SIDE){
+
+    length = measureText(text[STRING], font=TEXT_SIDE_FONT, size=text[FONT_SIZE]);
+    scaleBy = (EXT_L-5) / length;
      translate (v=[EXT_L/2, SIDE_I+RIDGE_D*1.5, EXT_H/2])
       rotate([90,0,0])
-        linear_extrude(height = RIDGE_D*2.5) {
+        scale([scaleBy,scaleBy,1])
+        linear_extrude(height = RIDGE_D*2) {
          text(text = text[STRING],
           font = TEXT_SIDE_FONT,
           size = text[FONT_SIZE],
